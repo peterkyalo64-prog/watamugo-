@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WatamuGo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F9FAFB;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#f1f1f1;}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+const C = {
+  primary:"#00A86B",primaryDark:"#007A4D",accent:"#FF6B35",
+  dark:"#1A1A2E",mid:"#6B7280",light:"#F0FDF4",border:"#E5E7EB",
+  white:"#FFFFFF",bg:"#F9FAFB",warning:"#F59E0B",success:"#10B981",danger:"#EF4444"
+};
+
+const CATEGORIES=[
+  {id:"groceries",label:"Groceries",icon:"🛒",color:"#4CAF50"},
+  {id:"food",label:"Food & Meals",icon:"🍽️",color:"#FF5722"},
+  {id:"produce",label:"Fresh Produce",icon:"🥦",color:"#8BC34A"},
+  {id:"seafood",label:"Fish & Seafood",icon:"🐟",color:"#03A9F4"},
+  {id:"water",label:"Water & Gas",icon:"💧",color:"#00BCD4"},
+  {id:"household",label:"Household",icon:"🏠",color:"#9C27B0"},
+];
+
+const VENDORS=[
+  {id:1,name:"Carrefour Watamu",category:"groceries",rating:4.7,reviews:120,delivery:"20–35 min",minOrder:500,image:"🏪",
+   items:[{id:101,name:"Unga wa Ugali 2kg",price:180,unit:"pack"},{id:102,name:"Cooking Oil 1L",price:220,unit:"bottle"},
+          {id:103,name:"Sugar 1kg",price:150,unit:"pack"},{id:104,name:"Milk 500ml",price:65,unit:"pack"},
+          {id:105,name:"Rice 2kg",price:260,unit:"pack"},{id:106,name:"Bread",price:55,unit:"loaf"}]},
+  {id:2,name:"Mama Pima Kitchen",category:"food",rating:4.9,reviews:88,delivery:"25–40 min",minOrder:300,image:"👩‍🍳",
+   items:[{id:201,name:"Nyama Choma + Ugali",price:550,unit:"plate"},{id:202,name:"Pilau (Large)",price:320,unit:"plate"},
+          {id:203,name:"Chips + Kuku",price:450,unit:"plate"},{id:204,name:"Biryani (Large)",price:380,unit:"plate"},
+          {id:205,name:"Samosa (6 pcs)",price:120,unit:"pack"},{id:206,name:"Mandazi (6 pcs)",price:80,unit:"pack"}]},
+  {id:3,name:"Watamu Fresh Market",category:"produce",rating:4.8,reviews:64,delivery:"15–30 min",minOrder:200,image:"🥬",
+   items:[{id:301,name:"Tomatoes 1kg",price:80,unit:"kg"},{id:302,name:"Sukuma Wiki (bunch)",price:30,unit:"bunch"},
+          {id:303,name:"Onions 1kg",price:90,unit:"kg"},{id:304,name:"Avocados (3 pcs)",price:60,unit:"pack"},
+          {id:305,name:"Bananas (bunch)",price:100,unit:"bunch"},{id:306,name:"Mangoes (5 pcs)",price:150,unit:"pack"}]},
+  {id:4,name:"Bahari Fish Point",category:"seafood",rating:5.0,reviews:43,delivery:"20–35 min",minOrder:400,image:"🎣",
+   items:[{id:401,name:"Fresh Tilapia 1kg",price:380,unit:"kg"},{id:402,name:"Prawns 500g",price:650,unit:"pack"},
+          {id:403,name:"Octopus 1kg",price:420,unit:"kg"},{id:404,name:"Crab (2 pcs)",price:800,unit:"pack"},
+          {id:405,name:"Fried Fish (2 pcs)",price:280,unit:"plate"},{id:406,name:"Smoked Mackerel",price:200,unit:"pack"}]},
+  {id:5,name:"Al Hashimiya Store",category:"groceries",rating:4.6,reviews:97,delivery:"20–30 min",minOrder:300,image:"🏬",
+   items:[{id:501,name:"Water 20L Jerican",price:120,unit:"jerican"},{id:502,name:"Gas Refill 6kg",price:1200,unit:"cylinder"},
+          {id:503,name:"Eggs (30 pcs tray)",price:480,unit:"tray"},{id:504,name:"Butter 250g",price:180,unit:"pack"},
+          {id:505,name:"Tea Leaves 250g",price:130,unit:"pack"},{id:506,name:"Wheat Flour 2kg",price:200,unit:"pack"}]},
+  {id:6,name:"Blue Marmalade Deli",category:"food",rating:4.8,reviews:55,delivery:"30–45 min",minOrder:500,image:"🥗",
+   items:[{id:601,name:"Grilled Snapper",price:950,unit:"plate"},{id:602,name:"Pasta Arrabiata",price:680,unit:"plate"},
+          {id:603,name:"Club Sandwich",price:450,unit:"plate"},{id:604,name:"Fresh Juice (500ml)",price:180,unit:"bottle"},
+          {id:605,name:"Chocolate Brownie",price:220,unit:"piece"},{id:606,name:"Caesar Salad",price:520,unit:"bowl"}]},
+];
+
+const ORDERS=[
+  {id:"WG-2841",customer:"James Omondi",items:"Nyama Choma + Pilau",total:870,status:"picked_up",rider:"Brian M.",time:"12 min ago",zone:"Turtle Bay"},
+  {id:"WG-2840",customer:"Sarah Lodge",items:"Groceries (6 items)",total:1240,status:"on_the_way",rider:"Kevin O.",time:"8 min ago",zone:"Watamu Village"},
+  {id:"WG-2839",customer:"Marco (Airbnb)",items:"Fresh Fish + Prawns",total:1030,status:"delivered",rider:"Brian M.",time:"35 min ago",zone:"Gede Road"},
+];
+
+function App(){
+  const [view,setView]=useState("home");
+  const [cat,setCat]=useState("all");
+  const [vendor,setVendor]=useState(null);
+  const [cart,setCart]=useState({});
+  const [cartV,setCartV]=useState(null);
+  const [tracking,setTracking]=useState(null);
+  const [role,setRole]=useState("customer");
+  const [phone,setPhone]=useState("");
+  const [addr,setAddr]=useState("");
+  const [step,setStep]=useState(1);
+  const [dtab,setDtab]=useState("live");
+  const [vtab,setVtab]=useState("orders");
+
+  const total=Object.entries(cart).reduce((s,[id,q])=>{
+    const v=VENDORS.find(v=>v.items.some(i=>i.id===Number(id)));
+    const it=v?.items.find(i=>i.id===Number(id));
+    return s+(it?.price||0)*q;
+  },0);
+  const count=Object.values(cart).reduce((a,b)=>a+b,0);
+  const fee=total<1000?200:total<2500?300:400;
+
+  const addCart=(item,v)=>{
+    if(cartV&&cartV.id!==v.id){if(!window.confirm(`Clear cart from ${cartV.name}?`))return;setCart({});}
+    setCartV(v);setCart(p=>({...p,[item.id]:(p[item.id]||0)+1}));
+  };
+  const remCart=(id)=>{
+    setCart(p=>{const n={...p};if(n[id]>1)n[id]--;else delete n[id];if(!Object.keys(n).length)setCartV(null);return n;});
+  };
+
+  const filtered=cat==="all"?VENDORS:VENDORS.filter(v=>v.category===cat);
+
+  const btn=(bg,color,pad="10px 18px")=>({padding:pad,borderRadius:8,border:"none",background:bg,color:color,fontWeight:700,fontSize:14,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6});
+
+  // NAV
+  const Nav=()=>(
+    <nav style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:200}}>
+      <div onClick={()=>{setView("home");setRole("customer");}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}>
+        <span style={{fontSize:22}}>🛵</span>
+        <span style={{fontSize:18,fontWeight:900}}>Watamu<span style={{color:C.primary}}>Go</span></span>
+      </div>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        {role==="customer"&&count>0&&(
+          <button onClick={()=>setView("cart")} style={{...btn(C.primary,C.white),borderRadius:20}}>
+            🛒 {count} · KES {total.toLocaleString()}
+          </button>
+        )}
+        {role==="customer"&&<button onClick={()=>{setRole("dispatch");setView("dispatch");}} style={btn(C.light,C.dark,"7px 14px")}>Dispatch</button>}
+        {role==="customer"&&<button onClick={()=>{setRole("vendor");setView("vdash");}} style={btn("transparent",C.mid,"7px 14px")}>Vendor</button>}
+        {role!=="customer"&&<button onClick={()=>{setRole("customer");setView("home");}} style={btn(C.light,C.dark,"7px 14px")}>← Back</button>}
+      </div>
+    </nav>
+  );
+
+  // HOME
+  const Home=()=>(
+    <div>
+      <div style={{background:`linear-gradient(135deg,${C.primaryDark},${C.primary})`,padding:"40px 20px 48px",color:C.white}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:2,opacity:0.8,marginBottom:10,textTransform:"uppercase"}}>🌊 Watamu · Kilifi County</div>
+        <div style={{fontSize:30,fontWeight:900,letterSpacing:"-1px",marginBottom:8,lineHeight:1.1}}>Everything Watamu,<br/>delivered to you</div>
+        <div style={{fontSize:14,opacity:0.9,marginBottom:24}}>Groceries, fish, meals, water — delivered by local riders.</div>
+        <div style={{background:C.white,borderRadius:12,padding:"6px 6px 6px 14px",display:"flex",alignItems:"center",gap:8,maxWidth:480}}>
+          <span>🔍</span>
+          <input style={{border:"none",outline:"none",fontSize:14,flex:1,color:C.dark}} placeholder="Search food, groceries, fish..."/>
+          <button style={{...btn(C.accent,C.white),borderRadius:8}}>Search</button>
+        </div>
+        <div style={{display:"flex",gap:24,marginTop:24,flexWrap:"wrap"}}>
+          {[["30+","Vendors"],["15–40","Min delivery"],["KES 150+","Delivery fee"],["M-Pesa","Payments"]].map(([v,l])=>(
+            <div key={l} style={{textAlign:"center"}}>
+              <div style={{fontSize:20,fontWeight:900}}>{v}</div>
+              <div style={{fontSize:11,opacity:0.8}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{padding:"24px 16px",maxWidth:1100,margin:"0 auto"}}>
+        <div style={{fontWeight:800,fontSize:17,marginBottom:14}}>What are you looking for?</div>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:20}}>
+          {[{id:"all",label:"All",icon:"",color:C.dark},...CATEGORIES].map(c=>(
+            <div key={c.id} onClick={()=>setCat(c.id)} style={{padding:"7px 14px",borderRadius:20,border:`1.5px solid ${cat===c.id?c.color:C.border}`,background:cat===c.id?c.color:C.white,color:cat===c.id?C.white:C.dark,fontWeight:600,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
+              {c.icon} {c.label}
+            </div>
+          ))}
+        </div>
+        <div style={{fontWeight:800,fontSize:17,marginBottom:14}}>Vendors</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
+          {filtered.map(v=>{
+            const c=CATEGORIES.find(c=>c.id===v.category);
+            return(
+              <div key={v.id} onClick={()=>{setVendor(v);setView("vendor");}} style={{background:C.white,borderRadius:14,overflow:"hidden",cursor:"pointer",border:`1px solid ${C.border}`}}>
+                <div style={{background:`linear-gradient(135deg,${c?.color||C.primary}22,${c?.color||C.primary}11)`,padding:"20px",fontSize:44,textAlign:"center",borderBottom:`1px solid ${C.border}`}}>{v.image}</div>
+                <div style={{padding:14}}>
+                  <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{v.name}</div>
+                  <div style={{color:C.mid,fontSize:12,marginBottom:8}}>⭐ {v.rating} ({v.reviews}) · 🕐 {v.delivery}</div>
+                  <div style={{display:"flex",gap:6}}>
+                    <span style={{background:`${c?.color||C.primary}18`,color:c?.color||C.primary,borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>{c?.label}</span>
+                    <span style={{background:"#f3f4f6",color:C.mid,borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>Min KES {v.minOrder}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{marginTop:40,background:C.white,borderRadius:16,padding:24,border:`1px solid ${C.border}`}}>
+          <div style={{fontWeight:800,fontSize:17,marginBottom:16}}>How WatamuGo works</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:16}}>
+            {[{icon:"📱",t:"Place your order",d:"Choose a vendor and add items"},{icon:"✅",t:"Confirm & pay",d:"Pay via M-Pesa STK push"},{icon:"🛵",t:"Rider picks up",d:"A local rider collects your order"},{icon:"📦",t:"Delivered fast",d:"Fresh items at your door"}].map((s,i)=>(
+              <div key={i} style={{textAlign:"center",padding:"14px 8px"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{s.icon}</div>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{s.t}</div>
+                <div style={{fontSize:12,color:C.mid,lineHeight:1.5}}>{s.d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // VENDOR
+  const Vendor=()=>{
+    const v=vendor;if(!v)return null;
+    return(
+      <div>
+        <div style={{background:`linear-gradient(135deg,${C.primary},${C.primaryDark})`,padding:"24px 16px",color:C.white}}>
+          <button onClick={()=>setView("home")} style={{background:"transparent",border:"none",color:C.white,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:10,padding:0}}>← Back</button>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div style={{fontSize:48}}>{v.image}</div>
+            <div>
+              <div style={{fontSize:20,fontWeight:800}}>{v.name}</div>
+              <div style={{opacity:0.85,fontSize:13,marginTop:3}}>⭐ {v.rating} · {v.reviews} reviews · 🕐 {v.delivery}</div>
+            </div>
+          </div>
+        </div>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"20px 16px"}}>
+          <div style={{fontWeight:800,fontSize:17,marginBottom:14}}>Menu</div>
+          {v.items.map(item=>(
+            <div key={item.id} style={{background:C.white,borderRadius:12,padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,border:`1px solid ${C.border}`}}>
+              <div>
+                <div style={{fontWeight:600,fontSize:14,marginBottom:2}}>{item.name}</div>
+                <div style={{color:C.primary,fontWeight:800,fontSize:14}}>KES {item.price.toLocaleString()} <span style={{color:C.mid,fontWeight:400,fontSize:12}}>/ {item.unit}</span></div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                {cart[item.id]?(
+                  <>
+                    <button onClick={()=>remCart(item.id)} style={{width:28,height:28,borderRadius:"50%",border:`1.5px solid ${C.primary}`,background:C.white,color:C.primary,fontWeight:700,fontSize:16,cursor:"pointer"}}>−</button>
+                    <span style={{fontWeight:700,fontSize:14,minWidth:20,textAlign:"center"}}>{cart[item.id]}</span>
+                    <button onClick={()=>addCart(item,v)} style={{width:28,height:28,borderRadius:"50%",border:"none",background:C.primary,color:C.white,fontWeight:700,fontSize:16,cursor:"pointer"}}>+</button>
+                  </>
+                ):(
+                  <button onClick={()=>addCart(item,v)} style={btn(C.primary,C.white,"7px 16px")}>Add</button>
+                )}
+              </div>
+            </div>
+          ))}
+          {count>0&&cartV?.id===v.id&&(
+            <div style={{position:"sticky",bottom:16,marginTop:20}}>
+              <button onClick={()=>setView("cart")} style={{...btn(C.accent,C.white),width:"100%",justifyContent:"center",padding:"14px",borderRadius:12,fontSize:15}}>
+                View Cart · {count} items · KES {total.toLocaleString()} →
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // CART
+  const Cart=()=>{
+    const items=Object.entries(cart).map(([id,q])=>{
+      const v=VENDORS.find(v=>v.items.some(i=>i.id===Number(id)));
+      const it=v?.items.find(i=>i.id===Number(id));
+      return{...it,q,v};
+    });
+    return(
+      <div style={{maxWidth:600,margin:"0 auto",padding:"24px 16px"}}>
+        <button onClick={()=>setView("vendor")} style={{background:"transparent",border:"none",fontWeight:700,cursor:"pointer",marginBottom:18,fontSize:14}}>← Back to menu</button>
+        <div style={{fontSize:20,fontWeight:800,marginBottom:20}}>Your order</div>
+        {step===1&&(
+          <>
+            <div style={{background:C.white,borderRadius:12,padding:18,marginBottom:14,border:`1px solid ${C.border}`}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.mid,marginBottom:12}}>FROM {cartV?.name?.toUpperCase()}</div>
+              {items.map(it=>(
+                <div key={it.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`}}>
+                  <div>
+                    <div style={{fontWeight:600,fontSize:14}}>{it.name}</div>
+                    <div style={{color:C.mid,fontSize:12}}>KES {it.price.toLocaleString()} × {it.q}</div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontWeight:700}}>KES {(it.price*it.q).toLocaleString()}</span>
+                    <button onClick={()=>remCart(it.id)} style={{width:26,height:26,borderRadius:"50%",border:`1px solid ${C.primary}`,background:C.white,color:C.primary,cursor:"pointer",fontWeight:700}}>−</button>
+                    <span style={{fontWeight:700,minWidth:16,textAlign:"center"}}>{it.q}</span>
+                    <button onClick={()=>addCart(it,cartV)} style={{width:26,height:26,borderRadius:"50%",border:"none",background:C.primary,color:C.white,cursor:"pointer",fontWeight:700}}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:C.white,borderRadius:12,padding:18,marginBottom:14,border:`1px solid ${C.border}`}}>
+              <div style={{fontWeight:700,fontSize:15,marginBottom:14}}>Delivery details</div>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:11,fontWeight:700,color:C.mid,display:"block",marginBottom:4}}>DELIVERY ADDRESS</label>
+                <input style={{width:"100%",border:`1.5px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:14,outline:"none"}} placeholder="e.g. Turtle Bay Road, near Watamu Beach Hotel" value={addr} onChange={e=>setAddr(e.target.value)}/>
+              </div>
+              <div>
+                <label style={{fontSize:11,fontWeight:700,color:C.mid,display:"block",marginBottom:4}}>PHONE (M-PESA)</label>
+                <input style={{width:"100%",border:`1.5px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:14,outline:"none"}} placeholder="0712 345 678" value={phone} onChange={e=>setPhone(e.target.value)}/>
+              </div>
+            </div>
+            <div style={{background:C.white,borderRadius:12,padding:18,marginBottom:18,border:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:14}}><span>Subtotal</span><span>KES {total.toLocaleString()}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:14}}><span>Delivery fee</span><span>KES {fee}</span></div>
+              <div style={{borderTop:`1px solid ${C.border}`,marginTop:10,paddingTop:10,display:"flex",justifyContent:"space-between",fontWeight:800,fontSize:15}}>
+                <span>Total</span><span style={{color:C.primary}}>KES {(total+fee).toLocaleString()}</span>
+              </div>
+            </div>
+            <button onClick={()=>setStep(2)} style={{...btn(C.primary,C.white),width:"100%",justifyContent:"center",padding:14,borderRadius:12,fontSize:15}}>Continue to pay →</button>
+          </>
+        )}
+        {step===2&&(
+          <>
+            <div style={{background:C.white,borderRadius:12,padding:22,marginBottom:16,border:`1px solid ${C.border}`}}>
+              <div style={{fontWeight:700,fontSize:16,marginBottom:18}}>Pay via M-Pesa</div>
+              <div style={{background:C.light,borderRadius:10,padding:16,marginBottom:18,textAlign:"center"}}>
+                <div style={{fontSize:40,marginBottom:10}}>📱</div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>STK Push to {phone||"your number"}</div>
+                <div style={{color:C.mid,fontSize:13}}>Confirm payment of</div>
+                <div style={{fontSize:28,fontWeight:900,color:C.primary,marginTop:6}}>KES {(total+fee).toLocaleString()}</div>
+              </div>
+   
